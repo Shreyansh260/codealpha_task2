@@ -69,8 +69,8 @@ The Speech Emotion Recognition (SER) System is a sophisticated Python-based solu
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/speech-emotion-recognition.git
-cd speech-emotion-recognition
+git clone https://github.com/Shreyansh260/codealpha_task2.git
+cd codealpha_task2
 ```
 
 ### 2. Create Virtual Environment
@@ -91,33 +91,77 @@ pip install -r requirements.txt
 
 ### 4. Verify Installation
 ```python
-python -c "import tensorflow as tf; import librosa; print('Installation successful!')"
+python -c "import tensorflow as tf; import librosa; import numpy as np; import pandas as pd; print('✅ Installation successful! All dependencies loaded.')"
+```
+
+### 5. Quick Test Run
+```python
+# Test the main components
+python -c "from Speech_emotion import AudioFeatureExtractor, EmotionRecognitionSystem; print('✅ Main classes imported successfully!')"
 ```
 
 ---
 
 ## ⚡ Quick Start
 
-### Basic Usage Example
+### Option 1: Basic Setup (Recommended for beginners)
 
 ```python
+# Step 1: Import the main system
 from Speech_emotion import EmotionRecognitionSystem
 
-# Initialize the system
+# Step 2: Initialize with your target emotions
 emotions = ['angry', 'happy', 'neutral', 'sad', 'fearful', 'surprised']
 ser_system = EmotionRecognitionSystem(emotions)
 
-# Load your dataset
-audio_files = ['path/to/audio1.wav', 'path/to/audio2.wav', ...]
-labels = ['happy', 'sad', 'angry', ...]
+# Step 3: Prepare your audio files and labels
+# Example with dummy data - replace with your actual file paths
+audio_files = [
+    'path/to/happy_audio1.wav',
+    'path/to/sad_audio1.wav',
+    'path/to/angry_audio1.wav',
+    # ... add more audio files
+]
+labels = ['happy', 'sad', 'angry']  # Corresponding emotion labels
 
-# Extract features and train
+# Step 4: Load dataset and extract features
+print("🔄 Extracting features from audio files...")
 X, y = ser_system.load_dataset(audio_files, labels)
-history = ser_system.train_model(X, y, model_type='hybrid', epochs=100)
+print(f"✅ Extracted features from {len(X)} audio files")
 
-# Predict emotion from new audio
+# Step 5: Train the model
+print("🚀 Training emotion recognition model...")
+history = ser_system.train_model(X, y, model_type='hybrid', epochs=50)
+print("✅ Model training completed!")
+
+# Step 6: Test prediction on new audio
 result = ser_system.predict_emotion('path/to/test_audio.wav')
-print(f"Emotion: {result['emotion']} (Confidence: {result['confidence']:.3f})")
+print(f"🎭 Predicted Emotion: {result['emotion']}")
+print(f"🎯 Confidence: {result['confidence']:.3f}")
+print(f"📊 All Probabilities: {result['probabilities']}")
+```
+
+### Option 2: Advanced Usage with Custom Features
+
+```python
+from Speech_emotion import AudioFeatureExtractor, EmotionRecognitionSystem
+import numpy as np
+
+# Initialize feature extractor with custom parameters
+feature_extractor = AudioFeatureExtractor(
+    sample_rate=22050,
+    duration=3.0  # 3-second audio clips
+)
+
+# Extract features manually for more control
+audio_file = 'sample_audio.wav'
+features = feature_extractor.extract_all_features(audio_file)
+
+if features:
+    print(f"✅ Extracted {len(features)} features from audio")
+    print("🔊 Feature types:", list(features.keys())[:5], "...")
+else:
+    print("❌ Failed to extract features")
 ```
 
 ### Training Different Models
@@ -137,25 +181,21 @@ for model_type in models:
 ## 📂 Project Structure
 
 ```
-speech-emotion-recognition/
-├── 📁 data/                    # Dataset storage
-│   ├── RAVDESS/               # RAVDESS dataset
-│   ├── TESS/                  # TESS dataset
-│   └── EMO-DB/                # EMO-DB dataset
-├── 📁 models/                 # Trained model storage
-├── 📁 notebooks/              # Jupyter notebooks
-│   ├── EDA.ipynb             # Exploratory Data Analysis
+codealpha_task2/
+├── 📄 LICENSE                 # MIT License
+├── 📄 README.md              # Project documentation
+├── 🐍 Speech_emotion.py      # Main system implementation
+├── 📄 requirements.txt       # Python dependencies
+├── 📁 data/                  # Dataset storage (create this folder)
+│   ├── RAVDESS/             # RAVDESS dataset
+│   ├── TESS/                # TESS dataset
+│   └── EMO-DB/              # EMO-DB dataset
+├── 📁 models/               # Trained model storage (create this folder)
+├── 📁 notebooks/            # Jupyter notebooks (optional)
+│   ├── EDA.ipynb           # Exploratory Data Analysis
 │   ├── Model_Comparison.ipynb # Model performance comparison
 │   └── Feature_Analysis.ipynb # Audio feature analysis
-├── 📁 src/                    # Source code
-│   ├── Speech_emotion.py      # Main system implementation
-│   ├── utils.py              # Utility functions
-│   └── config.py             # Configuration settings
-├── 📁 results/                # Training results and plots
-├── requirements.txt           # Python dependencies
-├── setup.py                  # Package installation
-├── README.md                 # This file
-└── LICENSE                   # MIT License
+└── 📁 results/              # Training results and plots (create this folder)
 ```
 
 ---
@@ -171,7 +211,29 @@ speech-emotion-recognition/
 
 ```python
 # RAVDESS dataset loading example
-from src.utils import load_ravdess_dataset
+# Create a simple utility function in Speech_emotion.py or separate file
+def load_ravdess_dataset(data_path):
+    """Load RAVDESS dataset files and labels"""
+    import os
+    import glob
+    
+    audio_files = []
+    labels = []
+    
+    # RAVDESS emotion mapping
+    emotion_map = {
+        '01': 'neutral', '02': 'calm', '03': 'happy', '04': 'sad',
+        '05': 'angry', '06': 'fearful', '07': 'disgusted', '08': 'surprised'
+    }
+    
+    for file_path in glob.glob(os.path.join(data_path, "*.wav")):
+        filename = os.path.basename(file_path)
+        emotion_code = filename.split('-')[2]  # Extract emotion from filename
+        if emotion_code in emotion_map:
+            audio_files.append(file_path)
+            labels.append(emotion_map[emotion_code])
+    
+    return audio_files, labels
 
 audio_files, labels = load_ravdess_dataset('data/RAVDESS/')
 X, y = ser_system.load_dataset(audio_files, labels)
@@ -303,7 +365,7 @@ HIDDEN_LAYERS = [256, 128, 64]
 
 ### Custom Feature Engineering
 ```python
-from src.Speech_emotion import AudioFeatureExtractor
+from Speech_emotion import AudioFeatureExtractor
 
 # Initialize custom feature extractor
 extractor = AudioFeatureExtractor(sample_rate=44100, duration=5.0)
@@ -416,22 +478,45 @@ def plot_audio_features(audio_file):
 
 ### Unit Tests
 ```bash
-# Run all tests
+# Run all tests (create tests/ folder first)
 python -m pytest tests/ -v
 
 # Run specific test file
 python -m pytest tests/test_feature_extraction.py -v
 
 # Run with coverage
-python -m pytest tests/ --cov=src --cov-report=html
+python -m pytest tests/ --cov=Speech_emotion --cov-report=html
 ```
 
 ### Performance Benchmarks
 ```python
-# Benchmark different models
-from src.utils import benchmark_models
+# Simple benchmark function you can add to Speech_emotion.py
+def benchmark_models(X_test, y_test, model_types=['dnn', 'cnn', 'lstm', 'hybrid']):
+    """Benchmark different model types"""
+    import time
+    
+    results = {}
+    for model_type in model_types:
+        print(f"Benchmarking {model_type}...")
+        
+        # Create and train model
+        ser = EmotionRecognitionSystem(['angry', 'happy', 'neutral', 'sad'])
+        
+        start_time = time.time()
+        history = ser.train_model(X_test, y_test, model_type=model_type, epochs=20)
+        training_time = time.time() - start_time
+        
+        # Evaluate
+        accuracy, _ = ser.evaluate_model(X_test, y_test)
+        
+        results[model_type] = {
+            'accuracy': accuracy,
+            'training_time': training_time
+        }
+    
+    return results
 
-results = benchmark_models(X_test, y_test, models=['dnn', 'cnn', 'lstm', 'hybrid'])
+results = benchmark_models(X_test, y_test, ['dnn', 'cnn', 'lstm', 'hybrid'])
 print("Benchmark Results:")
 for model, metrics in results.items():
     print(f"{model}: Accuracy={metrics['accuracy']:.3f}, Time={metrics['time']:.2f}s")
@@ -574,8 +659,8 @@ copies or substantial portions of the Software.
 
 📧 **Email**: shreyanshsinghrathore7@gmail.com  
 📱 **Phone**: +91-8619277114  
-🔗 **LinkedIn**: [linkedin.com/in/shriyansh-singh-rathore](https://linkedin.com/in/shriyansh-singh-rathore)  
-🐙 **GitHub**: [github.com/shriyansh-rathore](https://github.com/shriyansh-rathore)
+🔗 **LinkedIn**: [linkedin.com/in/shreyansh260](https://linkedin.com/in/shreyansh260)  
+🐙 **GitHub**: [github.com/Shreyansh260](https://github.com/Shreyansh260)
 
 ---
 
